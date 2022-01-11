@@ -61,7 +61,7 @@ void disable(String flutterPath) {
   }
   final chromeDartContentsWithWebSecurity = chromeDartContents.replaceFirst(
     "'--disable-extensions',",
-    "'--disable-extensions',$newLine      '--disable-web-security',",
+    "'--disable-extensions',\n      '--disable-web-security',",
   );
 
   // Write the new contents to the file
