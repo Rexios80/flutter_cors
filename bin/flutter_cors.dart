@@ -29,6 +29,18 @@ void deleteFlutterToolsStamp(String flutterPath) {
   }
 }
 
+void patch({
+  required String flutterPath,
+  required File chromeDartFile,
+  required String chromeDartContents,
+}) {
+  print('Patching $flutterPath/packages/flutter_tools/lib/src/web/chrome.dart');
+  chromeDartFile.writeAsStringSync(chromeDartContents);
+
+  print('Deleting $flutterPath/bin/cache/flutter_tools.stamp');
+  deleteFlutterToolsStamp(flutterPath);
+}
+
 // Find flutter/packages/flutter_tools/lib/src/web/chrome.dart
 File findChromeDart(String flutterPath) {
   final chromeDartPath =
@@ -51,9 +63,11 @@ void disable(String flutterPath) {
   );
 
   // Write the new contents to the file
-  chromeDartFile.writeAsStringSync(chromeDartContentsWithWebSecurity);
-
-  deleteFlutterToolsStamp(flutterPath);
+  patch(
+    flutterPath: flutterPath,
+    chromeDartFile: chromeDartFile,
+    chromeDartContents: chromeDartContentsWithWebSecurity,
+  );
 
   print('CORS is now disabled for Flutter\'s Chrome instance');
 }
@@ -73,9 +87,11 @@ void reset(String flutterPath) {
   );
 
   // Write the new contents to the file
-  chromeDartFile.writeAsStringSync(chromeDartContentsWithoutWebSecurity);
-
-  deleteFlutterToolsStamp(flutterPath);
+  patch(
+    flutterPath: flutterPath,
+    chromeDartFile: chromeDartFile,
+    chromeDartContents: chromeDartContentsWithoutWebSecurity,
+  );
 
   print('CORS is now enabled for Flutter\'s Chrome instance');
 }
