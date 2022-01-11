@@ -1,5 +1,7 @@
 import 'dart:io';
 
+final newLine = Platform.isWindows ? '\r\n' : '\n';
+
 /// Based on https://stackoverflow.com/a/66879350/8174191
 void main(List<String> arguments) async {
   final String flutterPath;
@@ -59,7 +61,7 @@ void disable(String flutterPath) {
   }
   final chromeDartContentsWithWebSecurity = chromeDartContents.replaceFirst(
     "'--disable-extensions',",
-    "'--disable-extensions',\n      '--disable-web-security',",
+    "'--disable-extensions',$newLine      '--disable-web-security',",
   );
 
   // Write the new contents to the file
@@ -82,7 +84,7 @@ void reset(String flutterPath) {
     exit(0);
   }
   final chromeDartContentsWithoutWebSecurity = chromeDartContents.replaceFirst(
-    "      '--disable-web-security',\n",
+    "      '--disable-web-security',$newLine",
     '',
   );
 
