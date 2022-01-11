@@ -31,6 +31,13 @@ void deleteFlutterToolsStamp(String flutterPath) {
   }
 }
 
+// Find flutter/packages/flutter_tools/lib/src/web/chrome.dart
+File findChromeDart(String flutterPath) {
+  final chromeDartPath =
+      '$flutterPath/packages/flutter_tools/lib/src/web/chrome.dart';
+  return File(chromeDartPath);
+}
+
 void patch({
   required String flutterPath,
   required File chromeDartFile,
@@ -41,13 +48,6 @@ void patch({
 
   print('Deleting $flutterPath/bin/cache/flutter_tools.stamp');
   deleteFlutterToolsStamp(flutterPath);
-}
-
-// Find flutter/packages/flutter_tools/lib/src/web/chrome.dart
-File findChromeDart(String flutterPath) {
-  final chromeDartPath =
-      '$flutterPath/packages/flutter_tools/lib/src/web/chrome.dart';
-  return File(chromeDartPath);
 }
 
 void disable(String flutterPath) {
