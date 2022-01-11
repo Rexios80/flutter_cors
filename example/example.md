@@ -1,7 +1,4 @@
 ```console
-fluttercors
-```
-
-```console
-fluttercors reset
+$ fluttercors disable
+$ fluttercors enable
 ```

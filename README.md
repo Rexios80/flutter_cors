@@ -11,10 +11,10 @@ $ dart pub global activate flutter_cors
 
 Disable CORS:
 ```console
-$ fluttercors
+$ fluttercors disable
 ```
 
 Enable CORS:
 ```console
-$ fluttercors reset
+$ fluttercors enable
 ```

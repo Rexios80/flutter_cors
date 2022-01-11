@@ -16,10 +16,12 @@ void main(List<String> arguments) async {
 
   final flutterFolderPath = File(flutterPath.trim()).parent.parent.path;
 
-  if (arguments.contains('reset')) {
-    reset(flutterFolderPath);
-  } else {
+  if (arguments.contains('enable')) {
+    enable(flutterFolderPath);
+  } else if (arguments.contains('disable')) {
     disable(flutterFolderPath);
+  } else {
+    print('Usage: fluttercors [enable|disable]');
   }
 }
 
@@ -74,13 +76,13 @@ void disable(String flutterPath) {
   print('CORS is now disabled for Flutter\'s Chrome instance');
 }
 
-void reset(String flutterPath) {
+void enable(String flutterPath) {
   final chromeDartFile = findChromeDart(flutterPath);
 
   // Find '--disable-web-security' and remove it
   final chromeDartContents = chromeDartFile.readAsStringSync();
   if (!chromeDartContents.contains('--disable-web-security')) {
-    print('CORS is not disabled for Flutter\'s Chrome instance');
+    print('CORS is already enabled for Flutter\'s Chrome instance');
     exit(0);
   }
   final chromeDartContentsWithoutWebSecurity = chromeDartContents.replaceFirst(
