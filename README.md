@@ -8,13 +8,13 @@ $ dart pub global activate flutter_cors
 ```
 
 ### Usage
-
-Disable CORS:
 ```console
-$ fluttercors disable
-```
+-e, --enable                 Enable CORS
+-d, --disable                Disable CORS
+-b, --disable-banner         Disable the warning banner in Chrome
+-p, --flutter-path=<path>    Flutter root path (determined automatically if not specified)
 
-Enable CORS:
-```console
-$ fluttercors enable
+$ fluttercors --disable
+$ fluttercors --enable
+# fluttercors -db -p /path/to/flutter
 ```
