@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ansicolor/ansicolor.dart';
 import 'package:args/args.dart';
 import 'package:pub_update_checker/pub_update_checker.dart';
 
@@ -34,12 +35,19 @@ final parser = ArgParser()
     valueHelp: 'path',
   );
 
+final magentaPen = AnsiPen()..magenta();
+final greenPen = AnsiPen()..green();
+final yellowPen = AnsiPen()..yellow();
+final redPen = AnsiPen()..red();
+
 /// Based on https://stackoverflow.com/a/66879350/8174191
 void main(List<String> arguments) async {
   final newVersion = await PubUpdateChecker.check();
   if (newVersion != null) {
     print(
-      'There is an update available: $newVersion. Run `dart pub global activate flutter_cors` to update.',
+      yellowPen(
+        'There is an update available: $newVersion. Run `dart pub global activate flutter_cors` to update.',
+      ),
     );
   }
 
@@ -47,7 +55,7 @@ void main(List<String> arguments) async {
   try {
     args = parser.parse(arguments);
   } catch (_) {
-    print(parser.usage);
+    print(magentaPen(parser.usage));
     exit(1);
   }
   final flutterFolderPath = await getFlutterFolderPath(args);
@@ -57,7 +65,7 @@ void main(List<String> arguments) async {
   } else if (args[flagDisable]) {
     disable(flutterFolderPath, args);
   } else {
-    print(parser.usage);
+    print(magentaPen(parser.usage));
   }
 }
 
@@ -111,7 +119,7 @@ void disable(String flutterPath, ArgResults args) {
   // Find '--disable-extensions' and add '--disable-web-security'
   final chromeDartContents = chromeDartFile.readAsStringSync();
   if (chromeDartContents.contains(disableWebSecurity)) {
-    print('CORS is already disabled for Flutter\'s Chrome instance');
+    print(redPen('CORS is already disabled for Flutter\'s Chrome instance'));
     exit(1);
   }
   var replacement = '$disableExtensions$newLine$indent$disableWebSecurity';
@@ -130,7 +138,7 @@ void disable(String flutterPath, ArgResults args) {
     chromeDartContents: chromeDartContentsWithWebSecurity,
   );
 
-  print('CORS is now disabled for Flutter\'s Chrome instance');
+  print(greenPen('CORS is now disabled for Flutter\'s Chrome instance'));
 }
 
 void enable(String flutterPath, ArgResults args) {
@@ -139,7 +147,7 @@ void enable(String flutterPath, ArgResults args) {
   // Find '--disable-web-security' and remove it
   final chromeDartContents = chromeDartFile.readAsStringSync();
   if (!chromeDartContents.contains(disableWebSecurity)) {
-    print('CORS is already enabled for Flutter\'s Chrome instance');
+    print(redPen('CORS is already enabled for Flutter\'s Chrome instance'));
     exit(1);
   }
   final chromeDartContentsWithoutWebSecurity = chromeDartContents
@@ -159,5 +167,5 @@ void enable(String flutterPath, ArgResults args) {
     chromeDartContents: chromeDartContentsWithoutWebSecurity,
   );
 
-  print('CORS is now enabled for Flutter\'s Chrome instance');
+  print(greenPen('CORS is now enabled for Flutter\'s Chrome instance'));
 }
