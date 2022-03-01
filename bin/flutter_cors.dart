@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:pub_update_checker/pub_update_checker.dart';
 
 final newLine = Platform.isWindows ? '\r\n' : '\n';
 
@@ -35,6 +36,13 @@ final parser = ArgParser()
 
 /// Based on https://stackoverflow.com/a/66879350/8174191
 void main(List<String> arguments) async {
+  final newVersion = await PubUpdateChecker.check();
+  if (newVersion != null) {
+    print(
+      'There is an update available: $newVersion. Run `dart pub global activate flutter_cors` to update.',
+    );
+  }
+
   final ArgResults args;
   try {
     args = parser.parse(arguments);

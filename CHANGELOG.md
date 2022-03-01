@@ -1,3 +1,6 @@
+## 1.3.0
+- Added update checking
+
 ## 1.2.0
 - Updated command structure using args package
 - More useful help output
