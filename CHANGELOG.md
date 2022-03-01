@@ -1,5 +1,6 @@
 ## 1.3.0
 - Added update checking
+- Colored output
 
 ## 1.2.0
 - Updated command structure using args package
