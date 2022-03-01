@@ -1,3 +1,6 @@
+## 1.3.1
+- Fixed script not exiting
+
 ## 1.3.0
 - Added update checking
 - Colored output

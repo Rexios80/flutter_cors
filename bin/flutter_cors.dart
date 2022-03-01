@@ -67,6 +67,8 @@ void main(List<String> arguments) async {
   } else {
     print(magentaPen(parser.usage));
   }
+
+  exit(0);
 }
 
 Future<String> getFlutterFolderPath(ArgResults args) async {
