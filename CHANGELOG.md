@@ -1,5 +1,6 @@
 ## 1.3.2
 - Added note to the readme
+- Updated terminology to be more clear
 
 ## 1.3.1
 - Fixed script not exiting
