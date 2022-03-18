@@ -1,3 +1,6 @@
+## 1.3.2
+- Added note to the readme
+
 ## 1.3.1
 - Fixed script not exiting
 
