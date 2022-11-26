@@ -1,5 +1,5 @@
 ```console
-$ fluttercors --disable
-$ fluttercors --enable
-$ fluttercors -db -p /path/to/flutter
+$ flutteroffcors --disable
+$ flutteroffcors --enable
+$ flutteroffcors -db -p /path/to/flutter
 ```

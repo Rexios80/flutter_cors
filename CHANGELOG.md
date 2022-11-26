@@ -1,3 +1,6 @@
+## 1.3.3
+- Added possibility to patch "web_driver_service.dart"
+
 ## 1.3.2
 - Added note to the readme
 - Updated terminology to be more clear
