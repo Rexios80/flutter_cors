@@ -99,6 +99,7 @@ File findChromeDart(String flutterPath) {
   return File(chromeDartPath);
 }
 
+/// Based on https://github.com/flutter/flutter/issues/101027#issuecomment-1084066141
 // Find flutter/packages/flutter_tools/lib/src/drive/web_driver_service.dart
 File findWebDriverServiceDart(String flutterPath) {
   final webDriverServiceDartPath = '$flutterPath/packages/flutter_tools/lib/src/drive/web_driver_service.dart';
@@ -123,17 +124,20 @@ void patch({
 }
 
 void disable(String flutterPath, ArgResults args) {
-  // Actions with 'chrome.dart' file
   final chromeDartFile = findChromeDart(flutterPath);
+  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
 
   // Find '--disable-extensions' and add '--disable-web-security'
   final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (chromeDartContents.contains(disableWebSecurity)) {
+  final webDriverServiceDartContents = webDriverServiceDartFile.readAsStringSync();
+  if (chromeDartContents.contains(disableWebSecurity) && webDriverServiceDartContents.contains(disableWebSecurity)) {
     print(
-      redPen('CORS checks are already disabled for Flutter\'s Chrome instance'),
+      redPen('CORS checks are already disabled for Flutter\'s Chrome instance & Web Server'),
     );
     exit(1);
   }
+
+  // Actions with 'chrome.dart' file
   var replacementChromeDart = '$disableExtensions$newLine$indentChromeDart$disableWebSecurity';
   if (args[flagDisableBanner]) {
     replacementChromeDart += '$newLine$indentChromeDart$testType';
@@ -144,18 +148,7 @@ void disable(String flutterPath, ArgResults args) {
   );
 
   // Actions with 'web_driver_service.dart'
-  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
-
-  // Find '--disable-extensions' and add '--disable-web-security'
-  final webDriverServiceDartContents = webDriverServiceDartFile.readAsStringSync();
-  if (webDriverServiceDartContents.contains(disableWebSecurity)) {
-    print(
-      redPen('CORS checks are already disabled for Flutter\'s Web Server instance'),
-    );
-    exit(1);
-  }
   final replacementWebDriverServiceDart = '$disableExtensions$newLine$indentWebDriverServiceDart$disableWebSecurity';
-
   final webDriverServiceDartContentsWithWebSecurity = webDriverServiceDartContents.replaceFirst(
     disableExtensions,
     replacementWebDriverServiceDart,
@@ -176,17 +169,20 @@ void disable(String flutterPath, ArgResults args) {
 }
 
 void enable(String flutterPath, ArgResults args) {
-  // Actions with 'chrome.dart' file
   final chromeDartFile = findChromeDart(flutterPath);
+  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
 
   // Find '--disable-web-security' and remove it
   final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (!chromeDartContents.contains(disableWebSecurity)) {
+  final webDriverServiceDartContents = webDriverServiceDartFile.readAsStringSync();
+  if (!chromeDartContents.contains(disableWebSecurity) && !webDriverServiceDartContents.contains(disableWebSecurity)) {
     print(
-      redPen('CORS checks are already enabled for Flutter\'s Chrome instance'),
+      redPen('CORS checks are already enabled for Flutter\'s Chrome instance & Web Server'),
     );
     exit(1);
   }
+
+  // Actions with 'chrome.dart' file
   final chromeDartContentsWithoutWebSecurity = chromeDartContents
       .replaceFirst(
         '$indentChromeDart$disableWebSecurity$newLine',
@@ -198,16 +194,6 @@ void enable(String flutterPath, ArgResults args) {
       );
 
   // Actions with 'web_driver_service.dart'
-  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
-
-  // Find '--disable-web-security' and remove it
-  final webDriverServiceDartContents = webDriverServiceDartFile.readAsStringSync();
-  if (!webDriverServiceDartContents.contains(disableWebSecurity)) {
-    print(
-      redPen('CORS checks are already enabled for Flutter\'s Web Server instance'),
-    );
-    exit(1);
-  }
   final webDriverServiceDartContentsWithoutWebSecurity = webDriverServiceDartContents.replaceFirst(
     '$indentWebDriverServiceDart$disableWebSecurity$newLine',
     '',

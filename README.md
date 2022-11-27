@@ -5,6 +5,11 @@ This script only disables CORS checks for local testing, and will not help with 
 
 ## Use as an executable
 
+### Installation
+```console
+$ dart pub global activate -sgit https://github.com/ivan-horchakov/flutter_off_cors.git
+```
+
 ### Usage
 ```console
 -e, --enable                 Enable CORS checks
