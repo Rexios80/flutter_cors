@@ -87,7 +87,13 @@ Future<String> getFlutterFolderPath(ArgResults args) async {
   } else {
     // macOS and Linux
     final whichFlutterResult = await Process.run('which', ['flutter']);
-    flutterPath = whichFlutterResult.stdout as String;
+    final tmpFlutterPath = whichFlutterResult.stdout as String;
+    // Get the real flutter path if it's a symbolic link.
+    final realFlutterResult = await Process.run(
+      'readlink',
+      ['-f', tmpFlutterPath.trim()],
+    );
+    flutterPath = realFlutterResult.stdout as String;
   }
 
   return File(flutterPath.trim()).parent.parent.path;
