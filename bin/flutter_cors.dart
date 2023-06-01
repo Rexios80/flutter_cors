@@ -90,7 +90,9 @@ Future<String> getFlutterFolderPath(ArgResults args) async {
     flutterPath = whichFlutterResult.stdout as String;
   }
 
-  return File(flutterPath.trim()).parent.parent.path;
+  final resolvedFlutterPath =
+      File(flutterPath.trim()).resolveSymbolicLinksSync();
+  return File(resolvedFlutterPath).parent.parent.path;
 }
 
 // Delete flutter/bin/cache/flutter_tools.stamp

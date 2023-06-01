@@ -1,3 +1,6 @@
+## 1.4.0
+- Resolve symbolic links to Flutter binary
+
 ## 1.3.2
 - Added note to the readme
 - Updated terminology to be more clear
