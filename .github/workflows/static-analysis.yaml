@@ -1,0 +1,17 @@
+name: Static Analysis
+
+on: [push, pull_request]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    container:
+      image: instrumentisto/flutter
+    steps:
+      - uses: actions/checkout@v3
+      - name: Analyze
+        run: dart analyze
+      - name: Format
+        run: dart format --set-exit-if-changed .
+      - name: Test
+        run: flutter test
