@@ -1,4 +1,4 @@
-A script to disable and re-enable CORS checks for Flutter's Chrome  & Web Server instances
+A script to disable and re-enable CORS checks for Flutter's Chrome instances
 
 ## Note
 This script only disables CORS checks for local testing, and will not help with CORS issues in production. Do not ask for help with production CORS issues as that is outside the scope of this project.
