@@ -12,6 +12,8 @@ dependencies:
   ansicolor: ^2.0.1
 
 dev_dependencies:
+  test: ^1.24.8
+
   rexios_lints: ^6.0.1
 
 executables:
