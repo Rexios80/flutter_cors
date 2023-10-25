@@ -154,7 +154,8 @@ String? contentsToDisable({
   } else {
     return contents.replaceFirstMapped(RegExp('( +)$disableExtensions'), (m) {
       final indent = m[1]!;
-      var replacement = '$indent$disableExtensions$newLine$indent$disableWebSecurity';
+      var replacement =
+          '$indent$disableExtensions$newLine$indent$disableWebSecurity';
       if (disableBanner) {
         replacement += '$newLine$indent$testType';
       }

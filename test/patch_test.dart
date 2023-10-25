@@ -39,7 +39,7 @@ void main() {
         fluttercors.contentsToEnable(file: patchedChromeDart);
     final enabledWebDriverServiceDartContents =
         fluttercors.contentsToEnable(file: patchedWebDriverServiceDart);
-    
+
     expect(enabledChromeDartContents, unpatchedChromeDartContents);
     expect(
       enabledWebDriverServiceDartContents,
