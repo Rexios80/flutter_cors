@@ -6,9 +6,11 @@ import 'package:pub_update_checker/pub_update_checker.dart';
 
 final newLine = Platform.isWindows ? '\r\n' : '\n';
 
-// chrome.dart constants
+// chrome.dart constants & web_driver_service.dart constants
 // The amount of indentation the chrome.dart file has in the relevant lines
-const indent = '      ';
+const indentChromeDart = '      ';
+// The amount of indentation the web_driver_service.dart file has in the relevant lines
+const indentWebDriverServiceDart = '            ';
 const disableExtensions = "'--disable-extensions',";
 const disableWebSecurity = "'--disable-web-security',";
 const testType = "'--test-type',";
@@ -110,13 +112,26 @@ File findChromeDart(String flutterPath) {
   return File(chromeDartPath);
 }
 
+// Find flutter/packages/flutter_tools/lib/src/drive/web_driver_service.dart
+File findWebDriverServiceDart(String flutterPath) {
+  final webDriverServiceDartPath =
+      '$flutterPath/packages/flutter_tools/lib/src/drive/web_driver_service.dart';
+  return File(webDriverServiceDartPath);
+}
+
 void patch({
   required String flutterPath,
   required File chromeDartFile,
   required String chromeDartContents,
+  required File webDriverServiceDartFile,
+  required String webDriverServiceDartContents,
 }) {
   print('Patching $flutterPath/packages/flutter_tools/lib/src/web/chrome.dart');
   chromeDartFile.writeAsStringSync(chromeDartContents);
+
+  print(
+      'Patching $flutterPath/packages/flutter_tools/lib/src/drive/web_driver_service.dart',);
+  webDriverServiceDartFile.writeAsStringSync(webDriverServiceDartContents);
 
   print('Deleting $flutterPath/bin/cache/flutter_tools.stamp');
   deleteFlutterToolsStamp(flutterPath);
@@ -124,22 +139,39 @@ void patch({
 
 void disable(String flutterPath, ArgResults args) {
   final chromeDartFile = findChromeDart(flutterPath);
+  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
 
   // Find '--disable-extensions' and add '--disable-web-security'
   final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (chromeDartContents.contains(disableWebSecurity)) {
+  final webDriverServiceDartContents =
+      webDriverServiceDartFile.readAsStringSync();
+  if (chromeDartContents.contains(disableWebSecurity) &&
+      webDriverServiceDartContents.contains(disableWebSecurity)) {
     print(
-      redPen('CORS checks are already disabled for Flutter\'s Chrome instance'),
+      redPen(
+          'CORS checks are already disabled for Flutter\'s Chrome instance & Web Server',),
     );
     exit(1);
   }
-  var replacement = '$disableExtensions$newLine$indent$disableWebSecurity';
+
+  // Actions with 'chrome.dart' file
+  var replacementChromeDart =
+      '$disableExtensions$newLine$indentChromeDart$disableWebSecurity';
   if (args[flagDisableBanner]) {
-    replacement += '$newLine$indent$testType';
+    replacementChromeDart += '$newLine$indentChromeDart$testType';
   }
   final chromeDartContentsWithWebSecurity = chromeDartContents.replaceFirst(
     disableExtensions,
-    replacement,
+    replacementChromeDart,
+  );
+
+  // Actions with 'web_driver_service.dart'
+  final replacementWebDriverServiceDart =
+      '$disableExtensions$newLine$indentWebDriverServiceDart$disableWebSecurity';
+  final webDriverServiceDartContentsWithWebSecurity =
+      webDriverServiceDartContents.replaceFirst(
+    disableExtensions,
+    replacementWebDriverServiceDart,
   );
 
   // Write the new contents to the file
@@ -147,40 +179,60 @@ void disable(String flutterPath, ArgResults args) {
     flutterPath: flutterPath,
     chromeDartFile: chromeDartFile,
     chromeDartContents: chromeDartContentsWithWebSecurity,
+    webDriverServiceDartFile: webDriverServiceDartFile,
+    webDriverServiceDartContents: webDriverServiceDartContentsWithWebSecurity,
   );
 
   print(
-    greenPen('CORS checks are now disabled for Flutter\'s Chrome instance'),
+    greenPen(
+        'CORS checks are now disabled for Flutter\'s Chrome instance & Web Server',),
   );
 }
 
 void enable(String flutterPath, ArgResults args) {
   final chromeDartFile = findChromeDart(flutterPath);
+  final webDriverServiceDartFile = findWebDriverServiceDart(flutterPath);
 
   // Find '--disable-web-security' and remove it
   final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (!chromeDartContents.contains(disableWebSecurity)) {
+  final webDriverServiceDartContents =
+      webDriverServiceDartFile.readAsStringSync();
+  if (!chromeDartContents.contains(disableWebSecurity) &&
+      !webDriverServiceDartContents.contains(disableWebSecurity)) {
     print(
-      redPen('CORS checks are already enabled for Flutter\'s Chrome instance'),
+      redPen(
+          'CORS checks are already enabled for Flutter\'s Chrome instance & Web Server',),
     );
     exit(1);
   }
+
   final chromeDartContentsWithoutWebSecurity = chromeDartContents
       .replaceFirst(
-        '$indent$disableWebSecurity$newLine',
+        '$indentChromeDart$disableWebSecurity$newLine',
         '',
       )
       .replaceFirst(
-        '$indent$testType$newLine',
+        '$indentChromeDart$testType$newLine',
         '',
       );
+
+  // Actions with 'web_driver_service.dart'
+  final webDriverServiceDartContentsWithoutWebSecurity =
+      webDriverServiceDartContents.replaceFirst(
+    '$indentWebDriverServiceDart$disableWebSecurity$newLine',
+    '',
+  );
 
   // Write the new contents to the file
   patch(
     flutterPath: flutterPath,
     chromeDartFile: chromeDartFile,
     chromeDartContents: chromeDartContentsWithoutWebSecurity,
+    webDriverServiceDartFile: webDriverServiceDartFile,
+    webDriverServiceDartContents:
+        webDriverServiceDartContentsWithoutWebSecurity,
   );
 
-  print(greenPen('CORS checks are now enabled for Flutter\'s Chrome instance'));
+  print(greenPen(
+      'CORS checks are now enabled for Flutter\'s Chrome instance & Web Server',),);
 }
