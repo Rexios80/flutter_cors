@@ -1,3 +1,6 @@
+## 1.5.0
+- Also patch web_driver_service.dart
+
 ## 1.4.0
 - Resolve symbolic links to Flutter binary
 

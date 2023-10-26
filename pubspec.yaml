@@ -1,6 +1,6 @@
 name: flutter_cors
 description: A script to disable and re-enable CORS checks for Flutter's Chrome instance
-version: 1.4.0
+version: 1.5.0
 homepage: https://github.com/Rexios80/flutter_cors
 
 environment:
@@ -12,6 +12,8 @@ dependencies:
   ansicolor: ^2.0.1
 
 dev_dependencies:
+  test: ^1.24.8
+
   rexios_lints: ^6.0.1
 
 executables:

@@ -1,0 +1,23 @@
+name: Static Analysis
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    container:
+      image: instrumentisto/flutter
+    steps:
+      - uses: actions/checkout@v3
+      - name: Pub get
+        run: flutter pub get
+      - name: Analyze
+        run: dart analyze
+      - name: Format
+        run: dart format --set-exit-if-changed .
+      - name: Test
+        run: flutter test

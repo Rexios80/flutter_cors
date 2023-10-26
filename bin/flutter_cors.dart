@@ -6,9 +6,7 @@ import 'package:pub_update_checker/pub_update_checker.dart';
 
 final newLine = Platform.isWindows ? '\r\n' : '\n';
 
-// chrome.dart constants
-// The amount of indentation the chrome.dart file has in the relevant lines
-const indent = '      ';
+// content constants
 const disableExtensions = "'--disable-extensions',";
 const disableWebSecurity = "'--disable-web-security',";
 const testType = "'--test-type',";
@@ -18,6 +16,12 @@ const flagEnable = 'enable';
 const flagDisable = 'disable';
 const flagDisableBanner = 'disable-banner';
 const optionFlutterPath = 'flutter-path';
+
+const filesToPatch = [
+  '/packages/flutter_tools/lib/src/web/chrome.dart',
+  '/packages/flutter_tools/lib/src/drive/web_driver_service.dart',
+];
+const stampPath = '/bin/cache/flutter_tools.stamp';
 
 final parser = ArgParser()
   ..addFlag(flagEnable, abbr: 'e', negatable: false, help: 'Enable CORS checks')
@@ -63,12 +67,26 @@ void main(List<String> arguments) async {
     print(magentaPen(parser.usage));
     exit(1);
   }
-  final flutterFolderPath = await getFlutterFolderPath(args);
+  final flutterFolderPath = getFlutterFolderPath(args);
 
   if (args[flagEnable]) {
-    enable(flutterFolderPath, args);
+    print('Enabling CORS checks');
+    patch(
+      flutterPath: flutterFolderPath,
+      paths: filesToPatch,
+      patch: (file) => contentsToEnable(file: file),
+    );
+    print(greenPen('CORS checks are now enabled'));
   } else if (args[flagDisable]) {
-    disable(flutterFolderPath, args);
+    print('Disabling CORS checks');
+    final disableBanner = args[flagDisableBanner];
+    patch(
+      flutterPath: flutterFolderPath,
+      paths: filesToPatch,
+      patch: (file) =>
+          contentsToDisable(file: file, disableBanner: disableBanner),
+    );
+    print(greenPen('CORS checks are now disabled'));
   } else {
     print(magentaPen(parser.usage));
   }
@@ -76,17 +94,17 @@ void main(List<String> arguments) async {
   exit(0);
 }
 
-Future<String> getFlutterFolderPath(ArgResults args) async {
+String getFlutterFolderPath(ArgResults args) {
   if (args[optionFlutterPath] != null) {
     return args[optionFlutterPath];
   }
   final String flutterPath;
   if (Platform.isWindows) {
-    final whereFlutterResult = await Process.run('where', ['flutter']);
+    final whereFlutterResult = Process.runSync('where', ['flutter']);
     flutterPath = (whereFlutterResult.stdout as String).split('\n').first;
   } else {
     // macOS and Linux
-    final whichFlutterResult = await Process.run('which', ['flutter']);
+    final whichFlutterResult = Process.runSync('which', ['flutter']);
     flutterPath = whichFlutterResult.stdout as String;
   }
 
@@ -95,92 +113,65 @@ Future<String> getFlutterFolderPath(ArgResults args) async {
   return File(resolvedFlutterPath).parent.parent.path;
 }
 
-// Delete flutter/bin/cache/flutter_tools.stamp
-void deleteFlutterToolsStamp(String flutterPath) {
-  final flutterToolsStampPath = '$flutterPath/bin/cache/flutter_tools.stamp';
-  if (File(flutterToolsStampPath).existsSync()) {
-    File(flutterToolsStampPath).deleteSync();
-  }
-}
-
-// Find flutter/packages/flutter_tools/lib/src/web/chrome.dart
-File findChromeDart(String flutterPath) {
-  final chromeDartPath =
-      '$flutterPath/packages/flutter_tools/lib/src/web/chrome.dart';
-  return File(chromeDartPath);
-}
-
 void patch({
   required String flutterPath,
-  required File chromeDartFile,
-  required String chromeDartContents,
+  required List<String> paths,
+  required String? Function(File file) patch,
 }) {
-  print('Patching $flutterPath/packages/flutter_tools/lib/src/web/chrome.dart');
-  chromeDartFile.writeAsStringSync(chromeDartContents);
+  var modified = false;
+  for (final path in paths) {
+    final file = File('$flutterPath$path');
+    final newContents = patch(file);
+    if (newContents != null) {
+      print('Patching ${file.path}');
+      file.writeAsStringSync(newContents);
+      modified = true;
+    } else {
+      print(yellowPen('Nothing to patch in ${file.path}'));
+    }
+  }
 
-  print('Deleting $flutterPath/bin/cache/flutter_tools.stamp');
-  deleteFlutterToolsStamp(flutterPath);
+  if (modified) {
+    final flutterToolsStamp = File('$flutterPath$stampPath');
+    if (flutterToolsStamp.existsSync()) {
+      print('Deleting ${flutterToolsStamp.path}');
+      flutterToolsStamp.deleteSync();
+    } else {
+      print(yellowPen('Stamp file does not exist'));
+    }
+  } else {
+    print(yellowPen('No files patched'));
+  }
 }
 
-void disable(String flutterPath, ArgResults args) {
-  final chromeDartFile = findChromeDart(flutterPath);
-
-  // Find '--disable-extensions' and add '--disable-web-security'
-  final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (chromeDartContents.contains(disableWebSecurity)) {
-    print(
-      redPen('CORS checks are already disabled for Flutter\'s Chrome instance'),
-    );
-    exit(1);
+String? contentsToDisable({
+  required File file,
+  required bool disableBanner,
+}) {
+  final contents = file.readAsStringSync();
+  if (contents.contains(disableWebSecurity)) {
+    return null;
+  } else {
+    return contents.replaceFirstMapped(RegExp('( +)$disableExtensions'), (m) {
+      final indent = m[1]!;
+      var replacement =
+          '$indent$disableExtensions$newLine$indent$disableWebSecurity';
+      if (disableBanner) {
+        replacement += '$newLine$indent$testType';
+      }
+      return replacement;
+    });
   }
-  var replacement = '$disableExtensions$newLine$indent$disableWebSecurity';
-  if (args[flagDisableBanner]) {
-    replacement += '$newLine$indent$testType';
-  }
-  final chromeDartContentsWithWebSecurity = chromeDartContents.replaceFirst(
-    disableExtensions,
-    replacement,
-  );
-
-  // Write the new contents to the file
-  patch(
-    flutterPath: flutterPath,
-    chromeDartFile: chromeDartFile,
-    chromeDartContents: chromeDartContentsWithWebSecurity,
-  );
-
-  print(
-    greenPen('CORS checks are now disabled for Flutter\'s Chrome instance'),
-  );
 }
 
-void enable(String flutterPath, ArgResults args) {
-  final chromeDartFile = findChromeDart(flutterPath);
-
-  // Find '--disable-web-security' and remove it
-  final chromeDartContents = chromeDartFile.readAsStringSync();
-  if (!chromeDartContents.contains(disableWebSecurity)) {
-    print(
-      redPen('CORS checks are already enabled for Flutter\'s Chrome instance'),
-    );
-    exit(1);
+String? contentsToEnable({required File file}) {
+  final contents = file.readAsStringSync();
+  if (!contents.contains(disableWebSecurity)) {
+    return null;
+  } else {
+    final indent = RegExp('( +)$disableExtensions').firstMatch(contents)![1]!;
+    return contents
+        .replaceFirst('$indent$disableWebSecurity$newLine', '')
+        .replaceFirst('$indent$testType$newLine', '');
   }
-  final chromeDartContentsWithoutWebSecurity = chromeDartContents
-      .replaceFirst(
-        '$indent$disableWebSecurity$newLine',
-        '',
-      )
-      .replaceFirst(
-        '$indent$testType$newLine',
-        '',
-      );
-
-  // Write the new contents to the file
-  patch(
-    flutterPath: flutterPath,
-    chromeDartFile: chromeDartFile,
-    chromeDartContents: chromeDartContentsWithoutWebSecurity,
-  );
-
-  print(greenPen('CORS checks are now enabled for Flutter\'s Chrome instance'));
 }

@@ -1,1 +1,5 @@
 include: package:rexios_lints/dart/package.yaml
+
+analyzer: 
+  exclude:
+  - test_resources/**
