@@ -5,16 +5,16 @@ import '../bin/flutter_cors.dart' as fluttercors;
 
 void main() {
   test('disable then enable', () {
-    final unpatchedChromeDart = File('test_resources/unpatched_chrome.dart');
+    final unpatchedChromeDart = File('test_resources/unpatched_chrome.txt');
     final unpatchedChromeDartContents = unpatchedChromeDart.readAsStringSync();
-    final patchedChromeDart = File('test_resources/patched_chrome.dart');
+    final patchedChromeDart = File('test_resources/patched_chrome.txt');
     final patchedChromeDartContents = patchedChromeDart.readAsStringSync();
     final unpatchedWebDriverServiceDart =
-        File('test_resources/unpatched_web_driver_service.dart');
+        File('test_resources/unpatched_web_driver_service.txt');
     final unpatchedWebDriverServiceDartContents =
         unpatchedWebDriverServiceDart.readAsStringSync();
     final patchedWebDriverServiceDart =
-        File('test_resources/patched_web_driver_service.dart');
+        File('test_resources/patched_web_driver_service.txt');
     final patchedWebDriverServiceDartContents =
         patchedWebDriverServiceDart.readAsStringSync();
 
